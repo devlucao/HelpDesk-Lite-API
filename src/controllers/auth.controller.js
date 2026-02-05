@@ -4,7 +4,7 @@ const login = (req, res) => {
   try{
   const { email, password } = req.body;
 
-    const validateLogin = loginService(email, password);
+    const validateLogin = authService(email, password);
 
     return res.status(200).json({token: validateLogin});
 

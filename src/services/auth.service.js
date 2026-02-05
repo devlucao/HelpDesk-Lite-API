@@ -1,7 +1,7 @@
 const users = require("../database/users.db");
 const jwt = require("jsonwebtoken");
 
-const loginService = (email, password) => {
+const authService = (email, password) => {
   if(!email || !password) {
     throw new Error("EMPTY_DATA")
   }
@@ -30,5 +30,5 @@ const loginService = (email, password) => {
 }
 
 module.exports = {
-  loginService
+  authService
 }
