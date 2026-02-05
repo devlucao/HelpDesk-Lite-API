@@ -8,4 +8,12 @@ const getMe = (req, res) => {
   }
 }
 
-module.exports = { getMe }
+const isAdmin = (req, res) => {
+  try {
+    return res.status(200).json({ message: `Sucesso! Usuário ${req.user.userId} tem permissões de administrador.` });
+  } catch(error) {
+    return res.status(500).json(error.message);
+  }
+}
+
+module.exports = { getMe, isAdmin }
