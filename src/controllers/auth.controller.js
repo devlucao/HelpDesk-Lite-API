@@ -1,4 +1,4 @@
-const { loginService } = require("../services/auth.service");
+const { authService } = require("../services/auth.service");
 
 const login = (req, res) => {
   try{
