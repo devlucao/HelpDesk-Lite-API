@@ -10,7 +10,7 @@ const login = (req, res) => {
 
   } catch(error) {
     if(error.message === "EMPTY_DATA") {
-      return res.status(401).json({ error: "Campo e-mail e senha são obrigatórios." });
+      return res.status(400).json({ error: "Campo e-mail e senha são obrigatórios." });
     }
     if(error.message === "USER_NOT_FOUND") {
       return res.status(401).json({ error: "Usuário não existe, favor verificar. "});

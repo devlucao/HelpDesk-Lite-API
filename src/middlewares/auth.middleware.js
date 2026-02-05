@@ -2,14 +2,15 @@ const jwt = require("jsonwebtoken");
 
 const validateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const [method, token] = authHeader.split(" ");
-
+  
   if (!authHeader) {
     return res.status(401).json({ error: "Autorização inválida." });
   }
 
+  const [method, token] = authHeader.split(" ");
+
   if (!method || method !== "Bearer") {
-    return res.status(400).json({ error: "Erro na autenticação, método inválido." });
+    return res.status(401).json({ error: "Erro na autenticação, método inválido." });
   }
 
   if (!token) {
