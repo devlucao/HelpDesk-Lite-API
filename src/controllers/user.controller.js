@@ -16,4 +16,12 @@ const isAdmin = (req, res, next) => {
   }
 }
 
-module.exports = { getMe, isAdmin }
+const createUser = (req, res, next) => {
+  try {
+    return res.status(200).send("ok")
+  } catch(err) {
+    next(err);
+  }
+}
+
+module.exports = { getMe, isAdmin, createUser }
