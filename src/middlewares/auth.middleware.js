@@ -1,20 +1,21 @@
 const jwt = require("jsonwebtoken");
+const { AppError } = require("../errors/AppError");
 
 const validateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader) {
-    return res.status(401).json({ error: "Autorização inválida." });
+    return next (new AppError(401, "Autorização inválida."))
   }
 
   const [method, token] = authHeader.split(" ");
 
   if (!method || method !== "Bearer") {
-    return res.status(401).json({ error: "Erro na autenticação, método inválido." });
+    return next (new AppError(401, "Erro na autenticação, método inválido."));
   }
 
   if (!token) {
-    return res.status(401).json({ error: "Usuário não autenticado. Token ausente." });
+    return next (new AppError(401, "Usuário não autenticado. Token ausente."));
   }
 
   try {
@@ -24,9 +25,9 @@ const validateToken = (req, res, next) => {
 
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ error: "Token expirado." });
+      return next (new AppError(401, "Token expirado."));
     }
-    return res.status(401).json({ error: error.message });
+    return next (new Error(401, error.message));
   }
 
   next()
