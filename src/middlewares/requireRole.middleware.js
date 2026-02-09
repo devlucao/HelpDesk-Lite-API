@@ -1,8 +1,10 @@
+const { AppError } = require("../errors/AppError");
+
 const validateRole = (req, res, next) => {
   const { role } = req.user;
 
   if(role !== "admin") {
-    return res.status(403).json({ error: "Usuário não autorizado." });
+    return next (new AppError(403, "Usuário não autorizado."));
   }
 
   next();
