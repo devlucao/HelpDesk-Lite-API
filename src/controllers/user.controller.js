@@ -1,27 +1,10 @@
-const getMe = (req, res, next) => {
+const getMe = (req, res) => {
   const { userId, role } = req.user;
-
-  try {
-    return res.status(200).json({ userId, role });
-  } catch(err) {
-    next(err);
-  }
+  return res.status(200).json({ userId, role });
 }
 
-const isAdmin = (req, res, next) => {
-  try {
-    return res.status(200).json({ message: `Sucesso! Usuário ${req.user.userId} tem permissões de administrador.` });
-  } catch(err) {
-    next(err);
-  }
+const isAdmin = (req, res) => {
+  return res.status(200).json({ message: `Sucesso! Usuário ${req.user.userId} tem permissões de administrador.` });
 }
 
-const createUser = (req, res, next) => {
-  try {
-    return res.status(200).send("ok")
-  } catch(err) {
-    next(err);
-  }
-}
-
-module.exports = { getMe, isAdmin, createUser }
+module.exports = { getMe, isAdmin }

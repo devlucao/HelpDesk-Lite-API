@@ -1,20 +1,22 @@
 const users = require("../database/users.db");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const { AppError } = require("../errors/AppError");
 
-const authService = (email, password) => {
+const authService = async (email, password) => {
   if(!email || !password) {
     throw new AppError(400, "Campo e-mail e senha são obrigatórios.");
   }
-
+  
   const foundUser = users.find((user) => email === user.email);
+  const isValidPassword = await bcrypt.compare(password, foundUser.passwordHash);
 
   if(!foundUser) {
-    throw new AppError(401, "Usuário não existe, favor verificar.");
+    throw new AppError(401, "Credenciais inválidas.");
   }
 
-  if(foundUser.password !== password) {
-    throw new AppError(401, "Senha incorreta. Tente novamente.");
+  if(!isValidPassword) {
+    throw new AppError(401, "Credenciais inválidas.");
   }
 
   const payload = {
