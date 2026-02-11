@@ -1,29 +1,45 @@
-const users = require("../database/users.db");
 const bcrypt = require("bcrypt");
 const { AppError } = require("../errors/AppError");
+const { findUserByEmail, create, countByRole, findUserById } = require("../database/users.repository");
+
+const toPublicUser = (user) => {
+  const { id, name, email, role, createdAt} = user;
+
+  return { id, name, email, role, createdAt };
+}
+
+const createClientId = (clientsQuantity) => {
+  const preffix = "u-2";
+  const count = clientsQuantity + 1;
+  const suffix = count < 100 ? count.toString().padStart(2, '0') : count.toString().padStart(3, '0');
+  const newId = preffix + suffix;
+
+  return newId;
+}
+
+const getMeService = (userId) => {
+  const foundUser = findUserById(userId);
+
+  if (!foundUser) {
+    throw new AppError(401, "Usuário inválido.");
+  }
+
+  return toPublicUser(foundUser);
+}
 
 const createUserService = async (name, email, password) => {
-  const userExists = users.find((user) => user.email === email);
+  const userExists = findUserByEmail(email);
 
-  if(!name || !email || !password) {
+  if (!name || !email || !password) {
     throw new AppError(400, "Favor preencher todos os campos obrigatórios.");
   }
-  if(userExists) {
+  if (userExists) {
     throw new AppError(409, "E-mail já cadastrado.");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const clientsQuantity = users.filter((user) => user.role === "client").length;
-
-  const createClientId = (clientsQuantity) => {
-    const preffix = "u-2";
-    const count = clientsQuantity + 1;
-    const suffix = count < 100 ? count.toString().padStart(2, '0') : count.toString().padStart(3, '0');
-    const newId = preffix + suffix;
-    
-    return newId;
-  }
+  const clientsQuantity = countByRole("client");
 
   const newUser = {
     id: createClientId(clientsQuantity),
@@ -34,14 +50,9 @@ const createUserService = async (name, email, password) => {
     createdAt: new Date().toISOString()
   }
 
-  users.push(newUser);
+  create(newUser);
 
-  return { 
-    id: newUser.id,
-    name: newUser.name, 
-    email: newUser.email, 
-    role: newUser.role
-  };
+  return toPublicUser(newUser)
 }
 
-module.exports = { createUserService };
+module.exports = { getMeService, createUserService };

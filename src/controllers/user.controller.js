@@ -1,6 +1,11 @@
+const { getMeService } = require("../services/users.service");
+
 const getMe = (req, res) => {
-  const { userId, role } = req.user;
-  return res.status(200).json({ userId, role });
+  const { userId } = req.user;
+
+  const user = getMeService(userId);
+
+  return res.status(200).json(user);
 }
 
 const isAdmin = (req, res) => {
