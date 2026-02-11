@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:3000
+
+### Login como ADMIN (captura token)
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@helpdesk.com",
+  "password": "Admin@123"
+}
+
+### /me usando token do loginAdmin (sem copiar/colar)
+GET {{baseUrl}}/me
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### /admin/ping usando token do loginAdmin
+GET {{baseUrl}}/admin/ping
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+---
+
+### Login como AGENT (captura token)
+# @name loginAgent
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "bruno.agent@helpdesk.com",
+  "password": "Agent@123"
+}
+
+### /admin/ping com AGENT (deve dar 403)
+GET {{baseUrl}}/admin/ping
+Authorization: Bearer {{loginAgent.response.body.token}}
+
+---
+
+### Login inválido (deve 401)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@helpdesk.com",
+  "password": "errada"
+}
+
+### /me sem token (deve 401)
+GET {{baseUrl}}/me
