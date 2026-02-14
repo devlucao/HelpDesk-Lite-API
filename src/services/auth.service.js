@@ -8,7 +8,7 @@ const authService = async (email, password) => {
     throw new AppError(400, "Campo e-mail e senha são obrigatórios.");
   }
   
-  const foundUser = findUserByEmail(email);
+  const foundUser = await findUserByEmail(email);
   
   if(!foundUser) {
     throw new AppError(401, "Credenciais inválidas.");

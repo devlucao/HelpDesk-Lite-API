@@ -17,8 +17,8 @@ const createClientId = (clientsQuantity) => {
   return newId;
 }
 
-const getMeService = (userId) => {
-  const foundUser = findUserById(userId);
+const getMeService = async (userId) => {
+  const foundUser = await findUserById(userId);
 
   if (!foundUser) {
     throw new AppError(401, "Usuário inválido.");
@@ -28,7 +28,7 @@ const getMeService = (userId) => {
 }
 
 const createUserService = async (name, email, password) => {
-  const userExists = findUserByEmail(email);
+  const userExists = await findUserByEmail(email);
 
   if (!name || !email || !password) {
     throw new AppError(400, "Favor preencher todos os campos obrigatórios.");
@@ -39,7 +39,7 @@ const createUserService = async (name, email, password) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const clientsQuantity = countByRole("client");
+  const clientsQuantity = await countByRole("client");
 
   const newUser = {
     id: createClientId(clientsQuantity),
@@ -50,7 +50,7 @@ const createUserService = async (name, email, password) => {
     createdAt: new Date().toISOString()
   }
 
-  create(newUser);
+  await create(newUser);
 
   return toPublicUser(newUser)
 }

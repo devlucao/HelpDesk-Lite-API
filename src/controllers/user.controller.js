@@ -1,9 +1,9 @@
 const { getMeService } = require("../services/users.service");
 
-const getMe = (req, res) => {
+const getMe = async (req, res) => {
   const { userId } = req.user;
 
-  const user = getMeService(userId);
+  const user = await getMeService(userId);
 
   return res.status(200).json(user);
 }
