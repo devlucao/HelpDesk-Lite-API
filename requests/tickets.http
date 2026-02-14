@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:3000
+
+### Login ADMIN
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@helpdesk.com",
+  "password": "Admin@123"
+}
+
+### Criar ticket (usa token do loginAdmin)
+POST {{baseUrl}}/tickets
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "title": "Reparo S.O.",
+  "description": "Iniciar ponto de restauração do sistema operacional"
+}

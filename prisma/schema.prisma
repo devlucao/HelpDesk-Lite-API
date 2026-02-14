@@ -14,4 +14,16 @@ model User {
   passwordHash String
   role         String
   createdAt    DateTime @default(now())
+  tickets      Ticket[]
+}
+
+model Ticket {
+id          String   @id @default(cuid())
+title       String
+description String?
+status      String   @default("open")
+createdAt   DateTime @default(now())
+
+createdById String
+createdBy   User     @relation(fields: [createdById], references: [id])
 }

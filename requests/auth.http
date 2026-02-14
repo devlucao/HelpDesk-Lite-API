@@ -18,8 +18,6 @@ Authorization: Bearer {{loginAdmin.response.body.token}}
 GET {{baseUrl}}/admin/ping
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
----
-
 ### Login como AGENT (captura token)
 # @name loginAgent
 POST {{baseUrl}}/login
@@ -33,8 +31,6 @@ Content-Type: application/json
 ### /admin/ping com AGENT (deve dar 403)
 GET {{baseUrl}}/admin/ping
 Authorization: Bearer {{loginAgent.response.body.token}}
-
----
 
 ### Login inválido (deve 401)
 POST {{baseUrl}}/login

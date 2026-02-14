@@ -2,7 +2,9 @@ const jwt = require("jsonwebtoken");
 const { AppError } = require("../errors/AppError");
 
 const validateToken = (req, _res, next) => {
+  console.log("AUTH HEADER:", req.headers.authorization);
   const authHeader = req.headers.authorization;
+
   
   if (!authHeader) {
     return next (new AppError(401, "Autorização inválida."))
@@ -27,7 +29,7 @@ const validateToken = (req, _res, next) => {
     if (error.name === "TokenExpiredError") {
       return next (new AppError(401, "Token expirado."));
     }
-    return next (new Error(401, error.message));
+    return next (new AppError(401, "Token inválido."));
   }
 
   next()

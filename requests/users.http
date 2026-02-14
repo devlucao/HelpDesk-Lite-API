@@ -16,13 +16,14 @@ Content-Type: application/json
 
 {
   "name": "Pedro Álvares Cabral",
-  "email": "pedro.client@helpdesk.com",
+  "email": "i_newton@email.com",
   "password": "Client@123"
 }
 
 ### POST /users - Criar usuário sem dados obrigatórios
 POST {{baseUrl}}/users
 Content-Type: application/json
+
 {
   "name": "Pedro Álvares Cabral",
   "email": "pedro.client@helpdesk.com"
