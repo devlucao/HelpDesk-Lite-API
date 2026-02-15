@@ -1,4 +1,4 @@
-const { createTicket } = require("../database/tickets.repository");
+const { createTicket, findTickets } = require("../database/tickets.repository");
 const { findUserById } = require("../database/users.repository");
 const { AppError } = require("../errors/AppError");
 
@@ -15,16 +15,29 @@ const createTicketService = async (userId, title, description) => {
 
   const newTicket = {
     title,
-    description: description,
+    description: description || null,
     status: "open",
-    createdAt: new Date().toISOString(),
     createdById: userId,
   }
 
-  await createTicket(newTicket);
+  const createdTicket = await createTicket(newTicket);
 
-  return newTicket;
+  return createdTicket;
 
 }
 
-module.exports = { createTicketService };
+const getTicketsService = async (role, userId) => {
+  if(!role) {
+    throw new AppError(401, "Função inexistente.");
+  }
+
+  if(!userId) {
+    throw new AppError(401, "Usuário não encontrado.");
+  }
+
+  const tickets = await findTickets(role, userId);
+
+  return tickets;
+}
+
+module.exports = { createTicketService, getTicketsService };

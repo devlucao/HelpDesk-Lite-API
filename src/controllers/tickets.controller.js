@@ -1,4 +1,4 @@
-const { createTicketService } = require("../services/tickets.service");
+const { createTicketService, getTicketsService } = require("../services/tickets.service");
 
 const createTicket = async (req, res, next) => {
   try {
@@ -13,4 +13,16 @@ const createTicket = async (req, res, next) => {
   }
 }
 
-module.exports = { createTicket }
+const getTickets = async (req, res, next) => {
+  try {
+    const { userId, role } = req.user;
+
+    const tickets = await getTicketsService(role, userId);
+
+    return res.status(200).json(tickets);
+  } catch(err) {
+    next(err);
+  }
+}
+
+module.exports = { createTicket, getTickets }

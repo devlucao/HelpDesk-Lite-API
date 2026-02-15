@@ -10,12 +10,43 @@ Content-Type: application/json
   "password": "Admin@123"
 }
 
-### Criar ticket (usa token do loginAdmin)
+### Login CLIENT
+# @name loginClient
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "pedro.client@helpdesk.com",
+  "password": "Client@123"
+}
+
+### Criar ticket como ADMIN
 POST {{baseUrl}}/tickets
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
 {
-  "title": "Reparo S.O.",
-  "description": "Iniciar ponto de restauração do sistema operacional"
+  "title": "Ticket admin",
+  "description": "Criado pelo admin"
 }
+
+### Criar ticket como CLIENT
+POST {{baseUrl}}/tickets
+Authorization: Bearer {{loginClient.response.body.token}}
+Content-Type: application/json
+
+{
+  "title": "Ticket client",
+  "description": "Criado pelo client"
+}
+
+### Listar tickets como ADMIN (deve ver todos)
+GET {{baseUrl}}/tickets
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Listar tickets como CLIENT (deve ver só os próprios)
+GET {{baseUrl}}/tickets
+Authorization: Bearer {{loginClient.response.body.token}}
+
+### Listar tickets sem token (deve 401)
+GET {{baseUrl}}/tickets

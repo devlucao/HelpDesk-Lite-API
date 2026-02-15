@@ -47,7 +47,6 @@ const createUserService = async (name, email, password) => {
     email,
     role: "client",
     passwordHash,
-    createdAt: new Date().toISOString()
   }
 
   await create(newUser);
