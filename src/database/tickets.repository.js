@@ -26,4 +26,27 @@ const findTickets = async (role, userId) => {
   })
 }
 
-module.exports = { createTicket, findTickets };
+const findTicketById = async (id) => {
+  return prisma.ticket.findUnique({
+    where: { id },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true
+        }
+      }
+    }
+  });
+}
+
+const updateTicket = async (id, status) => {
+  return prisma.ticket.update({
+    where: { id },
+    data: { status }
+  })
+}
+
+module.exports = { createTicket, findTickets, findTicketById, updateTicket };

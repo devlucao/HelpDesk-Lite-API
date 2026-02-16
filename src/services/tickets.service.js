@@ -1,4 +1,4 @@
-const { createTicket, findTickets } = require("../database/tickets.repository");
+const { createTicket, findTickets, findTicketById, updateTicket } = require("../database/tickets.repository");
 const { findUserById } = require("../database/users.repository");
 const { AppError } = require("../errors/AppError");
 
@@ -9,7 +9,7 @@ const createTicketService = async (userId, title, description) => {
     throw new AppError(400, "Favor informar um título para o ticket.");
   }
 
-  if(!userExists) {
+  if (!userExists) {
     throw new AppError(401, "Usuário não encontrado, tente novamente.");
   }
 
@@ -27,11 +27,11 @@ const createTicketService = async (userId, title, description) => {
 }
 
 const getTicketsService = async (role, userId) => {
-  if(!role) {
+  if (!role) {
     throw new AppError(401, "Função inexistente.");
   }
 
-  if(!userId) {
+  if (!userId) {
     throw new AppError(401, "Usuário não encontrado.");
   }
 
@@ -40,4 +40,36 @@ const getTicketsService = async (role, userId) => {
   return tickets;
 }
 
-module.exports = { createTicketService, getTicketsService };
+const getTicketsByIdService = async (ticketId, role, userId) => {
+  const ticket = await findTicketById(ticketId);
+
+  if (!ticket) {
+    throw new AppError(404, 'Ticket não encontrado');
+  }
+
+  if (role === "client" && userId !== ticket.createdById) {
+    throw new AppError(403, "Você não tem permissão para acessar este ticket.")
+  }
+
+  return ticket;
+}
+
+const updateTicketStatusService = async (ticketId, role, status) => {
+  const ALLOWED_STATUS = ["open", "closed", "in_progress"];
+
+  if (!status || !ALLOWED_STATUS.includes(status)) {
+    throw new AppError(400, "Favor informar o novo status do ticket (usar: open, closed ou in_progress).");
+  }
+
+  if (role === "client") {
+    throw new AppError(403, "Você não tem permissão para alterar este ticket.");
+  }
+
+  try {
+    return await updateTicket(ticketId, status);
+  } catch (err) {
+    throw new AppError(404, "Ticket não encontrado.");
+  }
+}
+
+module.exports = { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService };

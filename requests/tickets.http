@@ -31,13 +31,14 @@ Content-Type: application/json
 }
 
 ### Criar ticket como CLIENT
+# @name createTicketAna
 POST {{baseUrl}}/tickets
 Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
 {
-  "title": "Ticket client",
-  "description": "Criado pelo client"
+  "title": "Ticket Ana",
+  "description": "Criado para teste do dia 6"
 }
 
 ### Listar tickets como ADMIN (deve ver todos)
@@ -50,3 +51,42 @@ Authorization: Bearer {{loginClient.response.body.token}}
 
 ### Listar tickets sem token (deve 401)
 GET {{baseUrl}}/tickets
+
+### GET /tickets/:id como DONO (deve 200)
+GET {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}
+Authorization: Bearer {{loginClient.response.body.token}}
+
+### GET /tickets/:id como ADMIN (deve 200)
+GET {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### PATCH status como ADMIN (deve 200)
+PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "in_progress"
+}
+
+### PATCH status com status inválido (deve 400)
+PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "invalid_status"
+}
+
+### PATCH status como CLIENT (deve 403)
+PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+Authorization: Bearer {{loginClient.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "closed"
+}
+
+### GET ticket inexistente (deve 404)
+GET {{baseUrl}}/tickets/does-not-exist
+Authorization: Bearer {{loginAdmin.response.body.token}}
