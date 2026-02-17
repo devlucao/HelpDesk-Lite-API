@@ -16,14 +16,15 @@ const createTicket = async (req, res, next) => {
 const getTickets = async (req, res, next) => {
   try {
     const { userId, role } = req.user;
+    const { page, limit, status } = req.query;
 
-    const tickets = await getTicketsService(role, userId);
+    const tickets = await getTicketsService(role, userId, page, limit, status);
 
     return res.status(200).json(tickets);
   } catch (err) {
     next(err);
   }
-}
+};
 
 const getTicketsById = async (req, res, next) => {
   try {

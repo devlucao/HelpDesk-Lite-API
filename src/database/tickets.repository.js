@@ -6,11 +6,12 @@ const createTicket = async (ticketModel) => {
   });
 }
 
-const findTickets = async (role, userId) => {
-  const where = role === "client" ? { createdById: userId } : {}; // admin/agentet sem filtro
-
-  return prisma.ticket.findMany({
+const findTickets = async ({ where, skip, take }) => {
+  const total = await prisma.ticket.count({ where });
+  const data = await prisma.ticket.findMany({
     where,
+    skip,
+    take,
     orderBy: { createdAt: "desc" },
     include: {
       createdBy:
@@ -23,7 +24,9 @@ const findTickets = async (role, userId) => {
         }
       }
     },
-  })
+  });
+
+  return { total, data }
 }
 
 const findTicketById = async (id) => {

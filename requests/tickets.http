@@ -1,5 +1,9 @@
 @baseUrl = http://localhost:3000
 
+# =========================================================
+# AUTH (tokens)
+# =========================================================
+
 ### Login ADMIN
 # @name loginAdmin
 POST {{baseUrl}}/login
@@ -20,7 +24,11 @@ Content-Type: application/json
   "password": "Client@123"
 }
 
-### Criar ticket como ADMIN
+# =========================================================
+# CREATE (POST /tickets)
+# =========================================================
+
+### Criar ticket como ADMIN (201)
 POST {{baseUrl}}/tickets
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
@@ -30,38 +38,79 @@ Content-Type: application/json
   "description": "Criado pelo admin"
 }
 
-### Criar ticket como CLIENT
-# @name createTicketAna
+### Criar ticket como CLIENT (201)
+# @name createTicketClient
 POST {{baseUrl}}/tickets
 Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
 {
-  "title": "Ticket Ana",
-  "description": "Criado para teste do dia 6"
+  "title": "Ticket client",
+  "description": "Criado para testar permissões"
 }
 
-### Listar tickets como ADMIN (deve ver todos)
+### Criar ticket sem title (400)
+POST {{baseUrl}}/tickets
+Authorization: Bearer {{loginClient.response.body.token}}
+Content-Type: application/json
+
+{
+  "description": "Sem title"
+}
+
+# =========================================================
+# LIST (GET /tickets) - paginação / filtros
+# =========================================================
+
+### Listar como ADMIN (200) - deve ver todos
 GET {{baseUrl}}/tickets
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Listar tickets como CLIENT (deve ver só os próprios)
+### Listar como CLIENT (200) - deve ver só os próprios
 GET {{baseUrl}}/tickets
 Authorization: Bearer {{loginClient.response.body.token}}
 
-### Listar tickets sem token (deve 401)
-GET {{baseUrl}}/tickets
-
-### GET /tickets/:id como DONO (deve 200)
-GET {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}
-Authorization: Bearer {{loginClient.response.body.token}}
-
-### GET /tickets/:id como ADMIN (deve 200)
-GET {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}
+### Listar com paginação (200)
+GET {{baseUrl}}/tickets?page=1&limit=2
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### PATCH status como ADMIN (deve 200)
-PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+### Listar com filtro status (200)
+GET {{baseUrl}}/tickets?status=open
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Status inválido (400)
+GET {{baseUrl}}/tickets?status=invalid_status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Limit inválido (400)
+GET {{baseUrl}}/tickets?limit=999
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Sem token (401)
+GET {{baseUrl}}/tickets
+
+# =========================================================
+# GET BY ID (GET /tickets/:id)
+# =========================================================
+
+### Buscar ticket por id como DONO (200)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}
+Authorization: Bearer {{loginClient.response.body.token}}
+
+### Buscar ticket por id como ADMIN (200)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Ticket inexistente (404)
+GET {{baseUrl}}/tickets/does-not-exist
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+# =========================================================
+# STATUS (PATCH /tickets/:id/status)
+# =========================================================
+
+### Atualizar status como ADMIN (200)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
@@ -69,8 +118,8 @@ Content-Type: application/json
   "status": "in_progress"
 }
 
-### PATCH status com status inválido (deve 400)
-PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+### Status inválido (400)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
@@ -78,15 +127,11 @@ Content-Type: application/json
   "status": "invalid_status"
 }
 
-### PATCH status como CLIENT (deve 403)
-PATCH {{baseUrl}}/tickets/{{createTicketAna.response.body.id}}/status
+### CLIENT tentando atualizar status (403)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
 Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
 {
   "status": "closed"
 }
-
-### GET ticket inexistente (deve 404)
-GET {{baseUrl}}/tickets/does-not-exist
-Authorization: Bearer {{loginAdmin.response.body.token}}
