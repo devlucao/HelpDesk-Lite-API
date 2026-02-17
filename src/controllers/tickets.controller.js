@@ -1,4 +1,4 @@
-const { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService } = require("../services/tickets.service");
+const { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService, assingTicketService } = require("../services/tickets.service");
 
 const createTicket = async (req, res, next) => {
   try {
@@ -54,4 +54,19 @@ const updateTicketStatus = async (req, res, next) => {
   }
 }
 
-module.exports = { createTicket, getTickets, getTicketsById, updateTicketStatus }
+const assignTicketToId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { assignedToId } = req.body;
+    const { role } = req.user;
+
+    const ticket = await assingTicketService(id, assignedToId, role);
+
+    return res.status(200).json(ticket);
+
+  } catch(err) {
+    next(err);
+  }
+}
+
+module.exports = { createTicket, getTickets, getTicketsById, updateTicketStatus, assignTicketToId }

@@ -52,4 +52,11 @@ const updateTicket = async (id, status) => {
   })
 }
 
-module.exports = { createTicket, findTickets, findTicketById, updateTicket };
+const assignTicket = async (id, assignedToId) => {
+  return prisma.ticket.update({
+    where: { id },
+    data: { assignedToId }
+  })
+}
+
+module.exports = { createTicket, findTickets, findTicketById, updateTicket, assignTicket };

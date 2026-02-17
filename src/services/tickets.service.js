@@ -1,4 +1,4 @@
-const { createTicket, findTickets, findTicketById, updateTicket } = require("../database/tickets.repository");
+const { createTicket, findTickets, findTicketById, updateTicket, assignTicket } = require("../database/tickets.repository");
 const { findUserById } = require("../database/users.repository");
 const { AppError } = require("../errors/AppError");
 
@@ -12,7 +12,7 @@ const createTicketService = async (userId, title, description) => {
   }
 
   if (!userExists) {
-    throw new AppError(401, "Usuário não encontrado, tente novamente.");
+    throw new AppError(401, "Token inválido, usuário não existe.");
   }
 
   const newTicket = {
@@ -54,11 +54,11 @@ const getTicketsService = async (role, userId, page, limit, status) => {
 
   const where = {};
 
-  if(role === "client") {
+  if (role === "client") {
     where.createdById = userId;
   }
 
-  if(status) {
+  if (status) {
     where.status = status;
   }
 
@@ -105,4 +105,37 @@ const updateTicketStatusService = async (ticketId, role, status) => {
   }
 }
 
-module.exports = { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService };
+const assingTicketService = async (id, assignedToId, role) => {
+  if (!assignedToId) {
+    throw new AppError(400, "Favor informar assignedToId.");
+  }
+
+  if (role === "client") {
+    throw new AppError(403, "Acesso negado.")
+  }
+
+  const assignee = await findUserById(assignedToId);
+
+  if (!assignee) {
+    throw new AppError(404, "Usuário inexistente.");
+  }
+
+  if (assignee.role !== "admin" && assignee.role !== "agent") {
+    throw new AppError(400, "Não autorizado.");
+  }
+
+  try {
+    return await assignTicket(id, assignedToId);
+  } catch (err) {
+    console.error(err);
+
+    if (err?.code === "P2025") {
+      throw new AppError(404, "Ticket não encontrado.");
+    }
+
+    throw new AppError(500, "Erro interno.");
+  }
+
+}
+
+module.exports = { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService, assingTicketService };
