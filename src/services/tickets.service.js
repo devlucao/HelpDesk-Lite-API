@@ -1,3 +1,5 @@
+const { prisma } = require("../database/prisma");
+const { createLog } = require("../database/ticketLogs.repository");
 const { createTicket, findTickets, findTicketById, updateTicket, assignTicket } = require("../database/tickets.repository");
 const { findUserById } = require("../database/users.repository");
 const { AppError } = require("../errors/AppError");
@@ -89,8 +91,8 @@ const getTicketsByIdService = async (ticketId, role, userId) => {
   return ticket;
 }
 
-const updateTicketStatusService = async (ticketId, role, status) => {
-  if (!status || !ALLOWED_STATUS.includes(status)) {
+const updateTicketStatusService = async (ticketId, role, userId, newStatus) => {
+  if (!newStatus || !ALLOWED_STATUS.includes(newStatus)) {
     throw new AppError(400, "Favor informar o novo status do ticket (usar: open, closed ou in_progress).");
   }
 
@@ -98,11 +100,28 @@ const updateTicketStatusService = async (ticketId, role, status) => {
     throw new AppError(403, "Você não tem permissão para alterar este ticket.");
   }
 
-  try {
-    return await updateTicket(ticketId, status);
-  } catch (err) {
+  const ticket = await findTicketById(ticketId);
+
+  if(!ticket) {
     throw new AppError(404, "Ticket não encontrado.");
   }
+
+  const oldStatus = ticket.status;
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const updatedTicket = await updateTicket(tx, ticketId, newStatus);
+
+    await createLog(tx, {
+      ticketId: updatedTicket.id,
+      action: "STATUS_CHANGED",
+      performedById: userId,
+      metadata: { from: oldStatus, to: newStatus }
+    });
+    
+    return updatedTicket;
+  });
+
+  return updated;
 }
 
 const assingTicketService = async (id, assignedToId, role) => {
@@ -125,7 +144,7 @@ const assingTicketService = async (id, assignedToId, role) => {
   }
 
   try {
-    return await assignTicket(id, assignedToId);
+    return await assignTicket(prisma, id, assignedToId);
   } catch (err) {
     console.error(err);
 

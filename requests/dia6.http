@@ -74,3 +74,24 @@ Content-Type: application/json
 {
   "assignedToId": "u-999"
 }
+
+### PATCH assign como ADMIN (gera log)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/assign
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "assignedToId": "u-101"
+}
+
+### PATCH status como ADMIN (gera log)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "in_progress"
+}
+
+### (Opcional) conferir no Prisma Studio se entrou TicketLog
+# Abra prisma studio e veja ticket_logs com 2 registros após as duas requisições

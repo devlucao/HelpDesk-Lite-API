@@ -45,15 +45,15 @@ const findTicketById = async (id) => {
   });
 }
 
-const updateTicket = async (id, status) => {
-  return prisma.ticket.update({
+const updateTicket = async (db, id, status) => {
+  return db.ticket.update({
     where: { id },
     data: { status }
   })
 }
 
-const assignTicket = async (id, assignedToId) => {
-  return prisma.ticket.update({
+const assignTicket = async (db, id, assignedToId) => {
+  return db.ticket.update({
     where: { id },
     data: { assignedToId }
   })

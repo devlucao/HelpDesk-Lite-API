@@ -16,7 +16,8 @@ model User {
   createdAt    DateTime @default(now())
   tickets      Ticket[]
 
-  assignedTickets Ticket[] @relation("TicketAssignee")
+  assignedTickets Ticket[]    @relation("TicketAssignee")
+  ticketLogs      TicketLog[]
 }
 
 model Ticket {
@@ -31,4 +32,21 @@ model Ticket {
 
   assignedToId String?
   assignedTo   User?   @relation("TicketAssignee", fields: [assignedToId], references: [id])
+
+  logs TicketLog[]
+}
+
+model TicketLog {
+  id       String @id @default(cuid())
+  
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  
+  action   String
+
+  performedById String
+  performedBy   User   @relation(fields: [performedById], references: [id])
+
+  metadata  Json?
+  createdAt DateTime @default(now())
 }

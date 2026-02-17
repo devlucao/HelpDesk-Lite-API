@@ -42,11 +42,11 @@ const getTicketsById = async (req, res, next) => {
 
 const updateTicketStatus = async (req, res, next) => {
   try {
-    const { role } = req.user;
+    const { role, userId } = req.user;
     const { id } = req.params;
     const { status } = req.body;
 
-    const ticket = await updateTicketStatusService(id, role, status);
+    const ticket = await updateTicketStatusService(id, role, userId, status);
 
     return res.status(200).json(ticket);
   } catch(err) {
