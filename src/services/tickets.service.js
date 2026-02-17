@@ -5,6 +5,11 @@ const { findUserById } = require("../database/users.repository");
 const { AppError } = require("../errors/AppError");
 
 const ALLOWED_STATUS = ["open", "closed", "in_progress"];
+const STATUS_TRANSITIONS = {
+ open: ["in_progress", "closed"],
+ in_progress: ["closed"],
+ closed: []
+};
 
 const createTicketService = async (userId, title, description) => {
   const userExists = await findUserById(userId);
@@ -107,6 +112,14 @@ const updateTicketStatusService = async (ticketId, role, userId, newStatus) => {
   }
 
   const oldStatus = ticket.status;
+
+  const allowedNext = STATUS_TRANSITIONS[oldStatus] ?? [];
+  if (!allowedNext.includes(newStatus)) {
+    throw new AppError(400, `Transição inválida. ${oldStatus} -> ${newStatus}`);
+  }
+
+  if(newStatus === oldStatus) return ticket;
+
 
   const updated = await prisma.$transaction(async (tx) => {
     const updatedTicket = await updateTicket(tx, ticketId, newStatus);
