@@ -1,4 +1,5 @@
 const { createUserService } = require("../services/users.service");
+const { created } = require("../utils/httpResponse");
 
 const createUser = async (req, res, next) => {
   try {
@@ -6,7 +7,7 @@ const createUser = async (req, res, next) => {
 
     const newUser = await createUserService(name, email, password);
 
-    return res.status(201).json(newUser)
+    return created(res, newUser);
   } catch (err) {
     next(err);
   }

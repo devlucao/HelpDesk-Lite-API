@@ -1,4 +1,5 @@
 const { createTicketService, getTicketsService, getTicketsByIdService, updateTicketStatusService, assingTicketService } = require("../services/tickets.service");
+const { created, ok, okList } = require("../utils/httpResponse");
 
 const createTicket = async (req, res, next) => {
   try {
@@ -7,7 +8,7 @@ const createTicket = async (req, res, next) => {
 
     const newTicket = await createTicketService(userId, title, description);
 
-    return res.status(201).json(newTicket);
+    return created(res, newTicket);
   } catch (err) {
     next(err);
   }
@@ -20,7 +21,7 @@ const getTickets = async (req, res, next) => {
 
     const tickets = await getTicketsService(role, userId, page, limit, status);
 
-    return res.status(200).json(tickets);
+    return okList(res, tickets.data, tickets.meta);
   } catch (err) {
     next(err);
   }
@@ -33,7 +34,7 @@ const getTicketsById = async (req, res, next) => {
 
     const ticket = await getTicketsByIdService(id, role, userId);
 
-    return res.status(200).json(ticket)
+    return ok(res, ticket);
   } catch (err) {
 
     next(err);
@@ -48,7 +49,7 @@ const updateTicketStatus = async (req, res, next) => {
 
     const ticket = await updateTicketStatusService(id, role, userId, status);
 
-    return res.status(200).json(ticket);
+    return ok(res, ticket);
   } catch(err) {
     next(err);
   }
@@ -62,7 +63,7 @@ const assignTicketToId = async (req, res, next) => {
 
     const ticket = await assingTicketService(id, assignedToId, role);
 
-    return res.status(200).json(ticket);
+    return ok(res, ticket);
 
   } catch(err) {
     next(err);

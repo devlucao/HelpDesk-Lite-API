@@ -1,8 +1,8 @@
 @baseUrl = http://localhost:3000
 
-# =========================================================
+# ==========================================================
 # AUTH (tokens)
-# =========================================================
+# ==========================================================
 
 ### Login ADMIN
 # @name loginAdmin
@@ -12,6 +12,16 @@ Content-Type: application/json
 {
   "email": "admin@helpdesk.com",
   "password": "Admin@123"
+}
+
+### Login AGENT
+# @name loginAgent
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "bruno.agent@helpdesk.com",
+  "password": "Agent@123"
 }
 
 ### Login CLIENT
@@ -24,18 +34,19 @@ Content-Type: application/json
   "password": "Client@123"
 }
 
-# =========================================================
-# CREATE (POST /tickets)
-# =========================================================
+# ==========================================================
+# POST /tickets (create)
+# ==========================================================
 
 ### Criar ticket como ADMIN (201)
+# @name createTicketAdmin
 POST {{baseUrl}}/tickets
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
 {
-  "title": "Ticket admin",
-  "description": "Criado pelo admin"
+  "title": "Ticket criado pelo ADMIN",
+  "description": "Descrição do ticket admin"
 }
 
 ### Criar ticket como CLIENT (201)
@@ -45,8 +56,8 @@ Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
 {
-  "title": "Ticket client",
-  "description": "Criado para testar permissões"
+  "title": "Ticket criado pelo CLIENT",
+  "description": "Descrição do ticket client"
 }
 
 ### Criar ticket sem title (400)
@@ -55,62 +66,85 @@ Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
 {
-  "description": "Sem title"
+  "description": "Sem título deve falhar"
 }
 
-# =========================================================
-# LIST (GET /tickets) - paginação / filtros
-# =========================================================
+### Criar ticket sem token (401)
+POST {{baseUrl}}/tickets
+Content-Type: application/json
 
-### Listar como ADMIN (200) - deve ver todos
+{
+  "title": "Sem token",
+  "description": "Deve falhar"
+}
+
+# ==========================================================
+# GET /tickets (list + paginação + filtro)
+# Retorno: { meta, data }
+# ==========================================================
+
+### Listar tickets como ADMIN (200) - vê todos
 GET {{baseUrl}}/tickets
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Listar como CLIENT (200) - deve ver só os próprios
+### Listar tickets como CLIENT (200) - vê só os próprios
 GET {{baseUrl}}/tickets
 Authorization: Bearer {{loginClient.response.body.token}}
 
-### Listar com paginação (200)
-GET {{baseUrl}}/tickets?page=1&limit=2
+### Listar tickets como ADMIN com paginação (200)
+GET {{baseUrl}}/tickets?page=1&limit=10
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Listar com filtro status (200)
+### Listar tickets como ADMIN com status=open (200)
 GET {{baseUrl}}/tickets?status=open
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Status inválido (400)
-GET {{baseUrl}}/tickets?status=invalid_status
+### Listar tickets page inválida (400)
+GET {{baseUrl}}/tickets?page=0&limit=10
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Limit inválido (400)
-GET {{baseUrl}}/tickets?limit=999
+### Listar tickets limit inválido (400)
+GET {{baseUrl}}/tickets?page=1&limit=999
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Sem token (401)
+### Listar tickets status inválido (400)
+GET {{baseUrl}}/tickets?status=paused
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### Listar tickets sem token (401)
 GET {{baseUrl}}/tickets
 
-# =========================================================
-# GET BY ID (GET /tickets/:id)
-# =========================================================
+# ==========================================================
+# GET /tickets/:id (details)
+# Retorno: { data }
+# ==========================================================
 
-### Buscar ticket por id como DONO (200)
-GET {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}
+### Buscar ticket do CLIENT como DONO (200)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}
 Authorization: Bearer {{loginClient.response.body.token}}
 
-### Buscar ticket por id como ADMIN (200)
-GET {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}
+### Buscar ticket do CLIENT como ADMIN (200)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-### Ticket inexistente (404)
+### Buscar ticket do CLIENT como AGENT (200) (se sua regra permitir)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}
+Authorization: Bearer {{loginAgent.response.body.token}}
+
+### Buscar ticket do CLIENT sem token (401)
+GET {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}
+
+### Buscar ticket inexistente (404)
 GET {{baseUrl}}/tickets/does-not-exist
 Authorization: Bearer {{loginAdmin.response.body.token}}
 
-# =========================================================
-# STATUS (PATCH /tickets/:id/status)
-# =========================================================
+# ==========================================================
+# PATCH /tickets/:id/status (status change + regras)
+# Retorno: { data }
+# ==========================================================
 
-### Atualizar status como ADMIN (200)
-PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
+### Status open -> in_progress (200) (ADMIN)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/status
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
@@ -118,17 +152,34 @@ Content-Type: application/json
   "status": "in_progress"
 }
 
-### Status inválido (400)
-PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
+### Status in_progress -> open (400) (regressão)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/status
 Authorization: Bearer {{loginAdmin.response.body.token}}
 Content-Type: application/json
 
 {
-  "status": "invalid_status"
+  "status": "open"
 }
 
-### CLIENT tentando atualizar status (403)
-PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.id}}/status
+### Status inválido (400)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "paused"
+}
+
+### Status sem body (400)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+}
+
+### CLIENT tentando alterar status (403)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/status
 Authorization: Bearer {{loginClient.response.body.token}}
 Content-Type: application/json
 
@@ -136,3 +187,60 @@ Content-Type: application/json
   "status": "closed"
 }
 
+### Alterar status de ticket inexistente (404)
+PATCH {{baseUrl}}/tickets/does-not-exist/status
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "status": "closed"
+}
+
+# ==========================================================
+# PATCH /tickets/:id/assign (assign agent/admin)
+# Retorno: { data }
+# ==========================================================
+
+### Assign como ADMIN para um AGENT (200)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/assign
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "assignedToId": "u-101"
+}
+
+### Assign sem assignedToId (400)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/assign
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+}
+
+### Assign para usuário inexistente (404)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/assign
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "assignedToId": "u-999"
+}
+
+### CLIENT tentando assign (403)
+PATCH {{baseUrl}}/tickets/{{createTicketClient.response.body.data.id}}/assign
+Authorization: Bearer {{loginClient.response.body.token}}
+Content-Type: application/json
+
+{
+  "assignedToId": "u-101"
+}
+
+### Assign ticket inexistente (404)
+PATCH {{baseUrl}}/tickets/does-not-exist/assign
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "assignedToId": "u-101"
+}
